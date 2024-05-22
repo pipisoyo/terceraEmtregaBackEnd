@@ -20,6 +20,10 @@
   <p>Subtotal: <span class="subtotal"></span></p>
 </div>
 {{/each}}
+
+<button type="button" onclick="completePurchase('{{cid}}')" >Finalizar Compra</button>
+
+
 {{else}}
 <p>No se encontró el carrito</p>
 {{/if}}
@@ -62,4 +66,37 @@
         console.error('Error al cerrar sesión:', error);
       });
   }
+
+  // Función para completar la compra enviando una solicitud al servidor
+function completePurchase(cid) {
+ 
+  const formAction = "/api/carts/{{cid}}/purchase"
+  
+    fetch(formAction, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({cid})   
+    })
+    .then(response => {
+        if (response) {
+          console.log("🚀 ~ completePurchase ~ response:", response)
+          
+               return response.json();
+        } else {
+            throw new Error('Error al completar la compra');
+        }
+    })
+
+    .then(data => {
+        // Manejar la respuesta del servidor, por ejemplo, mostrar un mensaje de éxito
+                //window.location.href = "/ticket";;
+        // Puedes redirigir a una página de confirmación de compra o actualizar la vista
+    })
+    .catch(error => {
+        console.error('Error al completar la compra:', error);
+        // Manejar errores, mostrar un mensaje de error, etc.
+    });
+}
 </script>

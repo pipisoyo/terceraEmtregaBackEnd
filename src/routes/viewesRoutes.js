@@ -54,4 +54,11 @@ viewRoutes.get('/', auth, viewsController.renderProfile);
  */
 viewRoutes.get('/restore', viewsController.renderRestore);
 
+/**
+ * Ruta para renderizar la vista de generacion del ticket.
+ * @name GET /restore
+ * @function
+ */
+viewRoutes.get('/ticket', viewsController.renderTicket);
+
 export default viewRoutes;

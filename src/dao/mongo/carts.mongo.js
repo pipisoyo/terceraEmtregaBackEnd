@@ -2,6 +2,8 @@ import cartsModel from "../models/carts.js";
 
 class CartsManager {
     async getCartById(id) {
+
+        
         try {
             return await cartsModel.findById(id).populate('products.product').lean().exec();
         } catch (error) {
@@ -54,6 +56,7 @@ class CartsManager {
     async updateCart(cid, newCart) {
         try {
             let cart = await cartsModel.findById(cid);
+            console.log("🚀 ~ CartsManager ~ updateCart ~ cart:", cart)
             cart.products = newCart;
             return await cart.save();
         } catch (error) {

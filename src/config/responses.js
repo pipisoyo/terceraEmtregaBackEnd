@@ -18,10 +18,9 @@ const response = {
      * @param {object} res - Objeto de respuesta.
      * @param {number} statusCode - Código de estado de la respuesta.
      * @param {string} message - Mensaje de error.
-     * @param {any} data - Datos de la respuesta.
      */
     errorResponse: (res, statusCode, message) => {
-        res.status(statusCode).json({ success: false, message , data});
+        res.status(statusCode).json({ success: false, message });
     }
 };
 

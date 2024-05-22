@@ -20,7 +20,7 @@ const cartControler = {
      */
     getCartById: async (req, res) => {
         const cid = req.params.cid;
-    
+
         try {
             const cart = await cartsService.getCartById(cid);
             if (cart.error) {
@@ -77,7 +77,7 @@ const cartControler = {
      * @param {object} req - Objeto de solicitud.
      * @param {object} res - Objeto de respuesta.
      */
-    deleteProductToCart: async (req, res) => {
+    deleteProduct: async (req, res) => {
         const cid = req.params.cid;
         const pid = req.params.pid;
 
@@ -145,11 +145,10 @@ const cartControler = {
     },
 
     /**
-    /**
-     * Finalizar el proceso de compra de un carrito.
-     * @param {object} req - Objeto de solicitud.
-     * @param {object} res - Objeto de respuesta.
-     */
+ * Finalizar el proceso de compra de un carrito.
+ * @param {object} req - Objeto de solicitud.
+ * @param {object} res - Objeto de respuesta.
+ */
     completePurchase: async (req, res) => {
         const cid = req.params.cid;
 
@@ -157,36 +156,27 @@ const cartControler = {
         try {
             // Obtener el carrito por su ID
             const cart = await cartsService.getCartById(cid);
-            console.log("🚀 ~ completePurchase: ~ cart:", cart)
-            
-            
+            console.log("🚀 ~ completePurchase: ~ cart:", cart._id.toString())
 
             // Verificar el stock de los productos en el carrito
-            const productsToPurchase = [];  
-            
+            const productsToPurchase = [];
             const productsNotPurchased = [];
-            
-            let i=1;
 
-            for (const product of cart.products) {
-                
-                let productId= (cart.products[i-1].product._id).toString()
+            for (let index = 0; index < cart.products.length; index++) {
+                const productId = cart.products[index].product._id.toString();
                 const productData = await productsSercivce.getById(productId);
-                console.log("🚀 ~ completePurchase: ~ productData:", productData)
-                
-                if (productData.stock >= cart.products[i-1].quantity) {
-                    productData.stock = productData.stock - cart.products[i-1].quantity;
-                    console.log("🚀 ~ completePurchase: ~ cart.products[i-1].quantity:", cart.products[i-1].quantity)
-                    console.log("🚀 ~ completePurchase: ~ productData.stock:", productData.stock)
- 
-                    await cartsService.updateQuantity(cart._id.toString(),productId, 0);
-                    await productsSercivce.updateProduct(productId,productData)
-                    productsToPurchase.push(product);
+
+                // Verificar y actualizar el stock del producto
+                if (productData.stock >= cart.products[index].quantity) {
+                    productData.stock -= cart.products[index].quantity;
+                    await cartsService.deleteProduct(cart._id.toString(), productId);
+                    await productsSercivce.updateProduct(productId, productData);
+                    productsToPurchase.push(cart.products[index]);
                 } else {
-                    productsNotPurchased.push(product);
+                    productsNotPurchased.push(cart.products[index]);
                 }
-                i++
             }
+
             // Generar un ticket con los datos de la compra
             const ticketData = {
                 code: generateUniqueCode(cart._id, new Date()),
@@ -195,25 +185,26 @@ const cartControler = {
                 purchaser: req.user.email
             };
 
+
             // Crear un nuevo ticket utilizando el modelo de Ticket de Mongoose
             const newTicket = new ticketModel(ticketData);
-            console.log("🚀 ~ completePurchase: ~ newTicket:", newTicket)
             await newTicket.save();
 
+            // Manejo de productos no comprados
             if (productsNotPurchased.length > 0) {
-                for (const product of productsNotPurchased) {
-                    await cartsService.updateQuantity(cart._id.toString(), product.product._id.toString(), product.quantity);
-                }
-                response.successResponse(res, 400, "Algunos productos no se pudieron procesar",  productsNotPurchased);
-            } else {
-                response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
+                console.log("🚀 ~ completePurchase: ~ productsNotPurchased:", productsNotPurchased)
+                const id=cart._id.toString()
+                    await cartsService.updateCart(id, productsNotPurchased);
+                    response.successResponse(res, 450, "Algunos productos no se pudieron procesar", productsNotPurchased);
             }
-        } catch (error) {
+                response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
             
+        } catch (error) {
             console.error("Error al finalizar la compra:", error);
             response.errorResponse(res, 500, "Error al finalizar la compra");
         }
     },
+    
 };
 
 export default cartControler;

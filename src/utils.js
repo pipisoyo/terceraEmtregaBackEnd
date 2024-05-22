@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import bcrypt from 'bcrypt'
-import ticketModel from './dao/models/tickets.js';
+
 
 // Obtiene la ruta del archivo actual
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +45,7 @@ export function generateUniqueCode(cartId, purchaseDatetime) {
 
   // Generar un hash único a partir de la cadena combinada
   function generateHash(data) {
-      const saltRounds = 10; // Número de rondas de sal para la generación del hash
+      const saltRounds = 10; 
       const hash = bcrypt.hashSync(data, saltRounds);
       return hash;
   }

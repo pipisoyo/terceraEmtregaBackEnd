@@ -1,11 +1,13 @@
-import productsModel from '../dao/models/products.js';
+
 import cartsModel from '../dao/models/carts.js';
 import userModel from '../dao/models/users.js';
 import response from '../config/responses.js';
+import cartControler from './cartControler.js';
 //import ProductsManager from '../dao/mongo/productManager.js';
 //import Products from "../dao/memory/products.memory.js"
 //const productsServices = new ProductsManager()
 import { Products } from '../dao/factory.js';
+import ticketModel from '../dao/models/tickets.js';
 
 
 const productsServices = new Products();
@@ -125,6 +127,16 @@ const viewsController = {
      */
     renderRestore: (req, res) => {
         res.render('restore');
+    },
+
+    renderTicket: (req, res) => {
+
+        const data = req.body
+        console.log("🚀 ~ data:", data)
+        //const ticket = ticketModel.()
+        
+        const { newTicket, productsToPurchase } = req.body;
+        res.render('ticket', { newTicket, productsToPurchase });
     }
 };
 
