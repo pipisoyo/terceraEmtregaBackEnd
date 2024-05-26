@@ -80,7 +80,7 @@ function completePurchase(cid) {
         body: JSON.stringify({cid})   
     })
     .then(response => {
-        if (response) {
+        if (response.ok) {
           console.log("🚀 ~ completePurchase ~ response:", response)
           
                return response.json();
@@ -90,10 +90,16 @@ function completePurchase(cid) {
     })
 
     .then(data => {
-        // Manejar la respuesta del servidor, por ejemplo, mostrar un mensaje de éxito
-                //window.location.href = "/ticket";;
-        // Puedes redirigir a una página de confirmación de compra o actualizar la vista
-    })
+    const ticketCode = data.data.newTicket.code;
+
+    // Mostrar el código del ticket en la consola para verificar
+    console.log("Código del Ticket:", ticketCode);
+
+    window.location.href = `/ticket/`+ticketCode;
+})
+        
+        
+    
     .catch(error => {
         console.error('Error al completar la compra:', error);
         // Manejar errores, mostrar un mensaje de error, etc.

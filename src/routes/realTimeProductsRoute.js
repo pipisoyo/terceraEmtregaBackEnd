@@ -21,4 +21,9 @@ realTimeProducts.get('/', auth, async (req, res) => {
   }
 });
 
+/**
+ * Exporta el enrutador de las RealTime.
+ * @module realTimeProducts
+ */
+
 export default realTimeProducts;

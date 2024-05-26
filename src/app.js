@@ -28,8 +28,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRoutes);
 app.use("/api/sessions", sessionsRouter);
 app.use(viewesRoutes);
-//app.use("/api/products/", localRouterProducts);
-//app.use("/api/carts/", localCartsRoute);
+
 
 // Handlebars
 /**

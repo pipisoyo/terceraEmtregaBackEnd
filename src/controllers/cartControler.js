@@ -1,12 +1,9 @@
-//import CartsManager from "../dao/mongo/cartManager.js"
-//import CartsManager from "../dao/memory/carts.memory.js";
 import { io } from "socket.io-client";
 import response from "../config/responses.js";
 import ticketModel from "../dao/models/tickets.js";
 import { cartsService } from "../repositories/index.js";
-import { productsSercivce } from "../repositories/index.js";
+import { productsService } from "../repositories/index.js";
 import { calculateTotalAmount, generateUniqueCode } from "../utils.js";
-
 
 /**
  * Controlador para la gestión de carritos.
@@ -128,83 +125,85 @@ const cartControler = {
     },
 
     /**
-     * Clear the cart by removing all products.
-     * @param {object} req - Request object.
-     * @param {object} res - Response object.
+     * Limpia el carrito eliminando todos los productos.
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
      */
     clearCart: async (req, res) => {
         const cid = req.params.cid;
         const products = [];
         try {
             await cartsService.updateCart(cid, products);
-            response.successResponse(res, "All products removed from the cart");
+            response.successResponse(res, "Todos los productos eliminados del carrito");
         } catch (error) {
             console.error("Error:", error);
-            response.serverErrorResponse(res, "Error removing the products from the cart");
+            response.errorResponse(res, "Error al eliminar los productos del carrito");
         }
     },
 
     /**
- * Finalizar el proceso de compra de un carrito.
+ * Finaliza el proceso de compra de un carrito.
  * @param {object} req - Objeto de solicitud.
  * @param {object} res - Objeto de respuesta.
  */
-    completePurchase: async (req, res) => {
-        const cid = req.params.cid;
+completePurchase: async (req, res) => {
+    const cid = req.params.cid;
 
+    try {
+        // Obtener el carrito por su ID
+        const cart = await cartsService.getCartById(cid);
 
-        try {
-            // Obtener el carrito por su ID
-            const cart = await cartsService.getCartById(cid);
-            console.log("🚀 ~ completePurchase: ~ cart:", cart._id.toString())
+        // Verificar el stock de los productos en el carrito
+        const productsToPurchase = [];
+        const productsNotPurchased = [];
 
-            // Verificar el stock de los productos en el carrito
-            const productsToPurchase = [];
-            const productsNotPurchased = [];
+        for (let index = 0; index < cart.products.length; index++) {
+            const productId = cart.products[index].product._id.toString();
+            const productData = await productsService.getById(productId);
 
-            for (let index = 0; index < cart.products.length; index++) {
-                const productId = cart.products[index].product._id.toString();
-                const productData = await productsSercivce.getById(productId);
-
-                // Verificar y actualizar el stock del producto
-                if (productData.stock >= cart.products[index].quantity) {
-                    productData.stock -= cart.products[index].quantity;
-                    await cartsService.deleteProduct(cart._id.toString(), productId);
-                    await productsSercivce.updateProduct(productId, productData);
-                    productsToPurchase.push(cart.products[index]);
-                } else {
-                    productsNotPurchased.push(cart.products[index]);
-                }
+            // Verificar y actualizar el stock del producto
+            if (productData.stock >= cart.products[index].quantity) {
+                productData.stock -= cart.products[index].quantity;
+                await cartsService.deleteProduct(cart._id.toString(), productId);
+                await productsService.updateProduct(productId, productData);
+                productsToPurchase.push(cart.products[index]);
+            } else {
+                productsNotPurchased.push({product:cart.products[index].product, quantity:cart.products[index].quantity});
             }
-
-            // Generar un ticket con los datos de la compra
-            const ticketData = {
-                code: generateUniqueCode(cart._id, new Date()),
-                purchase_datetime: new Date(),
-                amount: calculateTotalAmount(productsToPurchase),
-                purchaser: req.user.email
-            };
-
-
-            // Crear un nuevo ticket utilizando el modelo de Ticket de Mongoose
-            const newTicket = new ticketModel(ticketData);
-            await newTicket.save();
-
-            // Manejo de productos no comprados
-            if (productsNotPurchased.length > 0) {
-                console.log("🚀 ~ completePurchase: ~ productsNotPurchased:", productsNotPurchased)
-                const id=cart._id.toString()
-                    await cartsService.updateCart(id, productsNotPurchased);
-                    response.successResponse(res, 450, "Algunos productos no se pudieron procesar", productsNotPurchased);
-            }
-                response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
-            
-        } catch (error) {
-            console.error("Error al finalizar la compra:", error);
-            response.errorResponse(res, 500, "Error al finalizar la compra");
         }
-    },
+
+        // Generar un ticket con los datos de la compra
+        const ticketData = {
+            code: generateUniqueCode(cart._id, new Date()),
+            purchase_datetime: new Date(),
+            amount: calculateTotalAmount(productsToPurchase),
+            purchaser: req.user.email,
+            productsToPurchase
+        };
+
+        // Crear un nuevo ticket utilizando el modelo de Ticket de Mongoose
+        const newTicket = new ticketModel(ticketData);
+        await newTicket.save();
+
+        // Manejo de productos no comprados
+        if (productsNotPurchased.length > 0) {
+            const id = cart._id.toString();
+            await cartsService.updateCart(id, productsNotPurchased);
+            response.successResponse(res, 200, "Algunos productos no se pudieron procesar", {productsNotPurchased, newTicket});
+        } else {
+            response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
+        }
+        
+    } catch (error) {
+        console.error("Error al finalizar la compra:", error);
+        response.errorResponse(res, 500, "Error al finalizar la compra");
+    }
+},
     
 };
 
+/**
+ * Exporta los enrutadores de las rutas Carts.
+ * @controlers
+ */
 export default cartControler;

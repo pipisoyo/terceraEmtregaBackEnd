@@ -67,4 +67,8 @@ sessionsRouter.post("/restore", sessionController.restorePassword);
  */
 sessionsRouter.get('/current', auth, sessionController.getCurrentUser);
 
+/**
+ * Exporta los enrutadores de las rutas Sessions.
+ * @module sessionsRouter
+ */
 export default sessionsRouter;

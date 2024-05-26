@@ -55,10 +55,14 @@ viewRoutes.get('/', auth, viewsController.renderProfile);
 viewRoutes.get('/restore', viewsController.renderRestore);
 
 /**
- * Ruta para renderizar la vista de generacion del ticket.
- * @name GET /restore
+ * Ruta para renderizar la vista de generación del ticket.
+ * @name GET /ticket/:tcode
  * @function
  */
-viewRoutes.get('/ticket', viewsController.renderTicket);
+viewRoutes.get('/ticket/:tcode', viewsController.renderTicket);
 
+/**
+ * Exporta los enrutadores de las rutas viewes.
+ * @module viewRoutes
+ */
 export default viewRoutes;

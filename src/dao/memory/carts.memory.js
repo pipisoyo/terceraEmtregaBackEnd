@@ -15,6 +15,10 @@ class CartsManager {
         this.PATH = `${__dirname}/data/carts.json`;
     }
 
+    /**
+     * Maneja la lectura de datos desde el archivo JSON.
+     * @returns {Array} Array de carritos.
+     */
     async handleData() {
         try {
             let data = await fs.promises.readFile(this.PATH, 'utf-8');
@@ -32,6 +36,9 @@ class CartsManager {
         }
     }
 
+    /**
+     * Guarda los datos en el archivo JSON.
+     */
     async saveData() {
         try {
             await fs.promises.writeFile(this.PATH, JSON.stringify(this.carts, null, 2), { encoding: 'utf-8', flag: 'w' });
@@ -40,6 +47,10 @@ class CartsManager {
         }
     }
 
+    /**
+     * Crea un nuevo carrito.
+     * @returns {object} El nuevo carrito creado.
+     */
     async createCart() {
         await this.handleData();
 
@@ -54,6 +65,11 @@ class CartsManager {
         return newCart;
     }
 
+    /**
+     * Obtiene un carrito por su ID.
+     * @param {string} id - ID del carrito a buscar.
+     * @returns {object} El carrito encontrado o un objeto de error.
+     */
     async getCartById(id) {
         await this.handleData();
         const cart = this.carts.find(cart => cart._id.toString() === id);
@@ -64,6 +80,12 @@ class CartsManager {
         }
     }
 
+    /**
+     * Agrega un producto a un carrito.
+     * @param {string} cartId - ID del carrito.
+     * @param {string} productId - ID del producto a agregar.
+     * @returns {object} El carrito actualizado con el producto agregado.
+     */
     async addProduct(cartId, productId) {
         await this.handleData();
 
@@ -88,7 +110,13 @@ class CartsManager {
         return cart;
     }
 
-    async deleteProduct(cartId, productId) {
+/**
+     * Elimina un producto de un carrito.
+     * @param {string} cartId - ID del carrito.
+     * @param {string} productId - ID del producto a eliminar.
+     * @returns {object} El carrito actualizado sin el producto eliminado.
+     */
+async deleteProduct(cartId, productId) {
         await this.handleData();
 
         const cart = this.carts.find(cart => cart._id.toString() === cartId);
@@ -107,6 +135,13 @@ class CartsManager {
         return cart;
     }
     
+  /**
+     * Actualiza la cantidad de un producto en un carrito.
+     * @param {string} cartId - ID del carrito.
+     * @param {string} productId - ID del producto.
+     * @param {number} newQuantity - Nueva cantidad del producto.
+     * @returns {object} El carrito actualizado con la cantidad del producto modificada.
+     */
     async updateQuantity(cartId, productId, newQuantity) {
         await this.handleData();
 

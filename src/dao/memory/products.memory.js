@@ -1,6 +1,5 @@
 import fs from 'fs';
 import __dirname from '../../utils.js';
-import { Types } from 'mongoose';
 import mongoose from 'mongoose';
 
 

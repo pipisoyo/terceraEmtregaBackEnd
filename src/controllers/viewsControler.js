@@ -84,6 +84,7 @@ const viewsController = {
                 ...element.product,
                 quantity: element.quantity
             }));
+            console.log("🚀 ~ products ~ products:", products)
             const user = req.session.user;
 
             res.render('cart', { cart, cid, products, user });
@@ -129,14 +130,36 @@ const viewsController = {
         res.render('restore');
     },
 
-    renderTicket: (req, res) => {
-
-        const data = req.body
-        console.log("🚀 ~ data:", data)
-        //const ticket = ticketModel.()
+        /**
+     * Renderiza la vista de productos con paginación.
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
+     */
+    renderTicket: async(req, res) => {
         
-        const { newTicket, productsToPurchase } = req.body;
-        res.render('ticket', { newTicket, productsToPurchase });
+        const ticketCode = req.params.tcode
+        console.log("🚀 ~ renderTicket:async ~ ticketCode:", ticketCode)
+
+        try {
+            const ticket = await ticketModel.findOne({code : ticketCode}).lean().exec()
+            const result = await ticketModel.findOne({code : ticketCode}).populate('productsToPurchase.product').lean().exec();
+            const products = result.productsToPurchase.map(element => ({
+                ...element.product,
+                quantity: element.quantity
+            }));
+            console.log("🚀 ~ products ~ products:", products)
+            console.log("🚀 ~ renderTicket:async ~ ticket:", ticket)
+            res.render('ticket', {ticket, products } );
+
+        } catch (error) {
+            console.error('Error:', error);
+            response.errorResponse(res, 500, "Error en la base de datos");
+        }
+
+        
+    
+
+       
     }
 };
 

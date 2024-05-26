@@ -54,9 +54,14 @@ cartsRoutes.put('/:cid/products/:pid', cartControler.updateQuantity);
 cartsRoutes.delete('/:cid', cartControler.clearCart);
 
 /**
- * Ruta para finalizar el proseso de compras
+ * Ruta para finalizar el proceso de compras.
+ * @name POST /carts/:cid/purchase
+ * @function
  */
-
 cartsRoutes.post("/:cid/purchase", cartControler.completePurchase);
 
+/**
+ * Exporta los enrutadores de las rutas Carts.
+ * @module cartsRoutes
+ */
 export default cartsRoutes;

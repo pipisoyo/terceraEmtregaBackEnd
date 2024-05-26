@@ -19,7 +19,18 @@ const ticketSchema = new mongoose.Schema({
     purchaser: {
         type: String,
         required: true
-    }
+    },
+    productsToPurchase : [{
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "products",
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true
+        }
+    }]
 });
 
 // Crear el modelo Ticket basado en el esquema definido

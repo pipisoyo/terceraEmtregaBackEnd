@@ -1,6 +1,6 @@
 import { io } from '../config/server.js';
 import responses from "../config/responses.js";
-import { productsSercivce } from "../repositories/index.js";
+import { productsService} from "../repositories/index.js";
 
 /**
  * Controlador para la gestión de productos.
@@ -14,7 +14,7 @@ const productController = {
      */
     getAll: async (req, res) => {
         try {
-            const result = await productsSercivce.getAll()
+            const result = await productsService.getAll()
             
             res.status(200).send({ status: "success", payload: result });
             return result
@@ -32,7 +32,7 @@ const productController = {
     getById: async (req, res) => {
         try {
             const id = req.params._id;
-            const result = await productsSercivce.getById(id);
+            const result = await productsService.getById(id);
             if (!result) {
                 res.status(404).send({ status: "error", message: "Producto no encontrado" });
                 return;
@@ -60,7 +60,7 @@ const productController = {
                 return;
             }
 
-            const result = await productsSercivce.addProduct({ title, description, price, code, stock, status, category, thumbnails });
+            const result = await productsService.addProduct({ title, description, price, code, stock, status, category, thumbnails });
 
             if (!result) {
                 res.status(500).send({ status: "error", message: "Error al agregar el producto" });
@@ -82,9 +82,9 @@ const productController = {
     insertDocument: async (req, res) => {
         try {
             const product = req.body;
-            let result = await productsSercivce.insertDocument(product);
+            let result = await productsService.insertDocument(product);
             res.json({ result });
-            let data = await productsSercivce.getAll();
+            let data = await productsService.getAll();
             responses.successResponse(res, 201, "Documentos insertados exitosamente", result);
             io.emit('products', data.result);
         } catch (error) {
@@ -102,8 +102,8 @@ const productController = {
         try {
             const id = req.params._id;
             const productData = req.body;
-            const result = await productsSercivce.updateProduct(id, productData);
-            let data = await productsSercivce.getAll();
+            const result = await productsService.updateProduct(id, productData);
+            let data = await productsService.getAll();
             if (result) { 
                 io.emit('products', data.result);
                 res.status(201).send({ status: "success", payload: result });
@@ -124,8 +124,8 @@ const productController = {
     deleteProduct: async (req, res) => {
         try {
             const id = req.params._id;
-            const result = await productsSercivce.deleteProduct(id);
-            const data = await productsSercivce.getAll();
+            const result = await productsService.deleteProduct(id);
+            const data = await productsService.getAll();
             if (result) {
                 res.status(201).send({ status: "success", payload: result });
                 io.emit('products', data.result);
@@ -139,7 +139,7 @@ const productController = {
 
     realTime : async (req, res) => {
         try {
-            const products = await productsSercivce.getAll();
+            const products = await productsService.getAll();
             res.render('realTimeProducts', { products: products.result });
         } catch (error) {
             console.error('Error al obtener la lista de productos:', error);

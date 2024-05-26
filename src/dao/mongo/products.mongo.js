@@ -2,7 +2,7 @@ import productsModel from "../models/products.js";
 
 /**
  * Clase que gestiona las operaciones relacionadas con los productos.
- * @class productsManager
+ * @class ProductsManagerMongo
  */
 class Products {
 

@@ -1,9 +1,17 @@
 import cartsModel from "../models/carts.js";
-
+/**
+ * Clase que gestiona las operaciones relacionadas con los productos.
+ * @class CartsManagerMongo
+ */
 class CartsManager {
+
+    /**
+     * Obtiene un carrito por su ID.
+     * @param {string} id - ID del carrito a buscar.
+     * @returns {Promise<object>} - Carrito encontrado.
+     */
     async getCartById(id) {
 
-        
         try {
             return await cartsModel.findById(id).populate('products.product').lean().exec();
         } catch (error) {
@@ -12,6 +20,10 @@ class CartsManager {
         }
     }
 
+    /**
+     * Crea un nuevo carrito.
+     * @returns {Promise<object>} - Nuevo carrito creado.
+     */
     async createCart() {
         try {
             return await cartsModel.create({});
@@ -21,7 +33,14 @@ class CartsManager {
         }
     }
 
-    async addProduct(cid, pid, quantity) {
+     /**
+     * Agrega un producto a un carrito.
+     * @param {string} cid - ID del carrito.
+     * @param {string} pid - ID del producto a agregar.
+     * @param {number} quantity - Cantidad del producto a agregar.
+     * @returns {Promise<object>} - Carrito actualizado con el producto agregado.
+     */
+     async addProduct(cid, pid, quantity) {
         try {
             let cart = await cartsModel.findById(cid);
             let product = cart.products.find((product) => product.product.toString() === pid);
@@ -37,6 +56,12 @@ class CartsManager {
         }
     }
 
+    /**
+     * Elimina un producto de un carrito.
+     * @param {string} cid - ID del carrito.
+     * @param {string} pid - ID del producto a eliminar.
+     * @returns {Promise<object>} - Carrito actualizado sin el producto eliminado.
+     */
     async deleteProduct(cid, pid) {
         try {
             let cart = await cartsModel.findById(cid);
@@ -53,11 +78,16 @@ class CartsManager {
         }
     }
 
-    async updateCart(cid, newCart) {
+     /**
+     * Actualiza el contenido de un carrito.
+     * @param {string} cid - ID del carrito a actualizar.
+     * @param {object} newCart - Nuevo contenido del carrito.
+     * @returns {Promise<object>} - Carrito actualizado con el nuevo contenido.
+     */
+     async updateCart(cid, newCart) {
         try {
             let cart = await cartsModel.findById(cid);
-            console.log("🚀 ~ CartsManager ~ updateCart ~ cart:", cart)
-            cart.products = newCart;
+            cart.products = newCart.products;
             return await cart.save();
         } catch (error) {
             console.error("Error al actualizar el contenido del carrito:", error);
@@ -65,7 +95,14 @@ class CartsManager {
         }
     }
 
-    async updateQuantity(cid, pid, newQuantity) {
+     /**
+     * Actualiza la cantidad de un producto en un carrito.
+     * @param {string} cid - ID del carrito.
+     * @param {string} pid - ID del producto.
+     * @param {number} newQuantity - Nueva cantidad del producto.
+     * @returns {Promise<object>} - Carrito actualizado con la cantidad del producto modificada.
+     */
+     async updateQuantity(cid, pid, newQuantity) {
 
         try {
             let cart = await cartsModel.findById(cid);

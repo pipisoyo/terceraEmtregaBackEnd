@@ -6,8 +6,11 @@ import { io } from '../app.js';
 const localRouterProducts = Router();
 const productManager = new localProductManager();
 
-
-
+/**
+ * Ruta para obtener todos los productos o limitar la cantidad.
+ * @name GET /products
+ * @function
+ */
 localRouterProducts.get("/", async ({ query }, res) => {
   try {
     const { limit } = query;
@@ -23,6 +26,11 @@ localRouterProducts.get("/", async ({ query }, res) => {
   }
 });
 
+/**
+ * Ruta para obtener un producto por su ID.
+ * @name GET /products/:pid
+ * @function
+ */
 localRouterProducts.get("/:pid/", async (req, res) => {
   try {
     const { pid } = req.params;
@@ -35,11 +43,14 @@ localRouterProducts.get("/:pid/", async (req, res) => {
   }
 });
 
-
+/**
+ * Ruta para agregar un nuevo producto.
+ * @name POST /products
+ * @function
+ */
 localRouterProducts.post("/", async (req, res) => {
   try {
     const { title, description, code, price, stock, category, thumbnails } = req.body;
-
 
     const productData = {
       title,
@@ -62,7 +73,11 @@ localRouterProducts.post("/", async (req, res) => {
   }
 });
 
-
+/**
+ * Ruta para actualizar un producto por su ID.
+ * @name PUT /products/:pid
+ * @function
+ */
 localRouterProducts.put("/:pid", async (req, res) => {
   try {
     const { pid } = req.params;
@@ -86,10 +101,14 @@ localRouterProducts.put("/:pid", async (req, res) => {
   }
 });
 
+/**
+ * Ruta para eliminar un producto por su ID.
+ * @name DELETE /products/:pid
+ * @function
+ */
 localRouterProducts.delete("/:pid/", async (req, res) => {
   try {
     const { pid } = req.params;
-
 
     const product = await productManager.getProductById(pid);
 
@@ -97,7 +116,6 @@ localRouterProducts.delete("/:pid/", async (req, res) => {
       res.status(404).send("No se encontró el producto con el id " + pid);
       return;
     }
-
 
     const deletedProduct = await productManager.deleteProduct(pid);
 

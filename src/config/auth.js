@@ -29,7 +29,18 @@ export function authCartUser(req, res, next) {
     }
 }
 
+/**
+ * Middleware para verificar la autorización del usuario basado en roles.
+ * Permite el acceso si el usuario tiene uno de los roles especificados.
+ * @param {Array} role - Roles permitidos para acceder.
+ * @returns {Function} Middleware para verificar la autorización del usuario.
+ */
 export const authUser = (role) => {
+    /**
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
+     * @param {function} next - Función para pasar al siguiente middleware.
+     */
     return (req, res, next) => {
         if (!req.session.user) {
             return res.status(401).json({ status: "error", message: "Usuario no autenticado" })
@@ -44,3 +55,4 @@ export const authUser = (role) => {
         next();
     };
 };
+
