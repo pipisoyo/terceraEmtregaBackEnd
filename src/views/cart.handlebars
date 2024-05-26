@@ -4,7 +4,7 @@
   <a href="#" onclick="window.history.back(); return false;">Atrás</a>
 </div>
 <h1>Carrito de compras</h1>
-
+<div class="error" style="display: none;">Carrito vacío o falta de stock</div>
 {{#if cart}}
 <h2>ID del carrito: {{cid}}</h2>
 
@@ -81,25 +81,22 @@ function completePurchase(cid) {
     })
     .then(response => {
         if (response.ok) {
-          console.log("🚀 ~ completePurchase ~ response:", response)
-          
-               return response.json();
-        } else {
+            return response.json();
+        } else if (response.status === 409) {
+            document.querySelector('.error').style.display = 'block'; 
             throw new Error('Error al completar la compra');
+        } else {
+          console.log("🚀 ~ completePurchase ~ response:", response)
+            throw new Error('Error en la solicitud');
         }
     })
-
+    
     .then(data => {
+
     const ticketCode = data.data.newTicket.code;
-
-    // Mostrar el código del ticket en la consola para verificar
-    console.log("Código del Ticket:", ticketCode);
-
     window.location.href = `/ticket/`+ticketCode;
 })
         
-        
-    
     .catch(error => {
         console.error('Error al completar la compra:', error);
         // Manejar errores, mostrar un mensaje de error, etc.

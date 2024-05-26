@@ -54,10 +54,12 @@ const cartControler = {
     addProductToCart: async (req, res) => {
         const pid = req.params.pid;
         const cid = req.params.cid;
+        console.log("🚀 ~ addProductToCart: ~ cid:", cid)
         const quantity = 1;
 
         try {
             let cart = await cartsService.getCartById(cid);
+            console.log("🚀 ~ addProductToCart: ~ cart:", cart)
             if (!cart || cart.length === 0) {
                 cart = await cartsService.createCart();
             }
@@ -146,59 +148,69 @@ const cartControler = {
  * @param {object} req - Objeto de solicitud.
  * @param {object} res - Objeto de respuesta.
  */
-completePurchase: async (req, res) => {
-    const cid = req.params.cid;
-
-    try {
-        // Obtener el carrito por su ID
-        const cart = await cartsService.getCartById(cid);
-
-        // Verificar el stock de los productos en el carrito
-        const productsToPurchase = [];
-        const productsNotPurchased = [];
-
-        for (let index = 0; index < cart.products.length; index++) {
-            const productId = cart.products[index].product._id.toString();
-            const productData = await productsService.getById(productId);
-
-            // Verificar y actualizar el stock del producto
-            if (productData.stock >= cart.products[index].quantity) {
-                productData.stock -= cart.products[index].quantity;
-                await cartsService.deleteProduct(cart._id.toString(), productId);
-                await productsService.updateProduct(productId, productData);
-                productsToPurchase.push(cart.products[index]);
-            } else {
-                productsNotPurchased.push({product:cart.products[index].product, quantity:cart.products[index].quantity});
+    completePurchase: async (req, res) => {
+        const cid = req.params.cid;
+        console.log("🚀 ~ completePurchase: ~ cid:", cid)
+    
+        try {
+            // Obtener el carrito por su ID
+            const cart = await cartsService.getCartById(cid);
+    
+            // Verificar el stock de los productos en el carrito
+            const productsToPurchase = [];
+            const productsNotPurchased = [];
+    
+            for (let index = 0; index < cart.products.length; index++) {
+                const productId = cart.products[index].product._id.toString();
+                const productData = await productsService.getById(productId);
+    
+                // Verificar y actualizar el stock del producto
+                if (productData.stock >= cart.products[index].quantity) {
+                    productData.stock -= cart.products[index].quantity;
+                    await cartsService.deleteProduct(cart._id.toString(), productId);
+                    await productsService.updateProduct(productId, productData);
+                    productsToPurchase.push(cart.products[index]);
+                } else {
+                    productsNotPurchased.push({product:cart.products[index].product, quantity:cart.products[index].quantity});
+                }
             }
+            let purchaser = req.user.email;
+            if (!purchaser) {
+                purchaser = req.user.first_name;
+            }
+    
+            // Verificar si hay productos para comprar antes de generar un ticket
+            if (productsToPurchase.length > 0) {
+                // Generar un ticket con los datos de la compra
+                const ticketData = {
+                    code: generateUniqueCode(cart._id, new Date()),
+                    purchase_datetime: new Date(),
+                    amount: calculateTotalAmount(productsToPurchase),
+                    purchaser: purchaser,
+                    productsToPurchase
+                };
+    
+                // Crear un nuevo ticket utilizando el modelo de Ticket de Mongoose
+                const newTicket = new ticketModel(ticketData);
+                await newTicket.save();
+    
+                // Manejo de productos no comprados
+                if (productsNotPurchased.length > 0) {
+                    const id = cart._id.toString();
+                    await cartsService.updateCart(id, productsNotPurchased);
+                    response.successResponse(res, 207, "Algunos productos no se pudieron procesar", {productsNotPurchased, newTicket});
+                } else {
+                    response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
+                }
+            } else {
+                response.errorResponse(res, 409, "No se generó un ticket ya que no hay productos para comprar",);
+            }
+            
+        } catch (error) {
+            console.error("Error al finalizar la compra:", error);
+            response.errorResponse(res, 500, "Error al finalizar la compra");
         }
-
-        // Generar un ticket con los datos de la compra
-        const ticketData = {
-            code: generateUniqueCode(cart._id, new Date()),
-            purchase_datetime: new Date(),
-            amount: calculateTotalAmount(productsToPurchase),
-            purchaser: req.user.email,
-            productsToPurchase
-        };
-
-        // Crear un nuevo ticket utilizando el modelo de Ticket de Mongoose
-        const newTicket = new ticketModel(ticketData);
-        await newTicket.save();
-
-        // Manejo de productos no comprados
-        if (productsNotPurchased.length > 0) {
-            const id = cart._id.toString();
-            await cartsService.updateCart(id, productsNotPurchased);
-            response.successResponse(res, 200, "Algunos productos no se pudieron procesar", {productsNotPurchased, newTicket});
-        } else {
-            response.successResponse(res, 200, "Compra realizada exitosamente", newTicket);
-        }
-        
-    } catch (error) {
-        console.error("Error al finalizar la compra:", error);
-        response.errorResponse(res, 500, "Error al finalizar la compra");
-    }
-},
+    },
     
 };
 

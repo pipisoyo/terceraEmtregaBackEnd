@@ -5,12 +5,11 @@ import { createHash, isValidPassword } from "../utils.js";
 import GitHubStrategy from "passport-github2";
 import { Types } from 'mongoose';
 import config from "../config.js";
-import CartsManager from "../dao/memory/carts.memory.js";
+import { cartsService } from "../repositories/index.js";
 const { ObjectId } = Types;
 
 const LocalStrategy = local.Strategy;
 
-const cartsManager = new CartsManager();
 
 const admin = { username: config.adminUser , password: config.adminPassword };
 
@@ -32,7 +31,7 @@ const initializePassport = () => {
           if (user) {
             return done(null, false); // Usuario ya existe
           }
-          const cart = await cartsManager.createCart();
+          const cart = await cartsService.createCart();
           const newUser = {
             first_name,
             last_name,
@@ -102,7 +101,7 @@ const initializePassport = () => {
           let user = await userModel.findOne({email: profile._json.email});
 
           if (!user) {
-            const cart = await cartsManager.createCart();
+            const cart = await cartsService.createCart();
             const newUser = {
               first_name: profile._json.name,
               last_name: "",
